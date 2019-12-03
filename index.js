@@ -44,14 +44,16 @@ async function send(mail, santas){
 
     let transoptions = {
         name: mail.host,
-        pool: true, host: mail.host, port: mail.port,
+        //pool: true,
+        host: mail.host, port: mail.port,
         secure: false, tls: {
             rejectUnauthorized:false
         },
-        auth: {
-            user: mail.user,
-            pass: mail.pass
-        }
+        // authMethod: 'LOGIN',
+        // auth: {
+        //     user: mail.user,
+        //     pass: mail.pass
+        // }
     };
 
     let transdefaults = {
@@ -62,16 +64,14 @@ async function send(mail, santas){
 
     try{
         await trans.verify();
-        trans.on("idle", function() {
-            // send next message from the pending queue
-            while (trans.isIdle() && emails.length) {
+            while (emails.length) {
                 trans.sendMail(emails.shift());
+                console.log(emails.length);
             }
-        });
     }catch(eee){
         console.log('Verify Error', eee, transoptions, mail);
     }finally{
-        trans.close();
+        //trans.close();
     }
 }
 
