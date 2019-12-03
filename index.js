@@ -86,8 +86,7 @@ async function main(){
     const questions = [
         {type: 'fuzzypath', name:'santafile', message:'Santas file?',
             excludePath: nodePath => nodePath.startsWith('node_modules')||nodePath.startsWith('.'),
-            validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file'),
-            default:'santas.json'
+            validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file')
         },
         {type: 'input', name:'host', message:'Mail host?', default:setting.host},
         {type: 'input', name:'port', message:'Mail port?', default:setting.port},
