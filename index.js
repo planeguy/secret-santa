@@ -35,8 +35,9 @@ async function send(mail, santas){
 
     let emails = santas.map(santa=>({
         to:`"${santa.name}" ${santa.email}`,
-        text:`Your santee is: ${santa.santee.name}!\nKeep it secret! Keep it safe!\n\nSanta`,
-        html:`<p>Your santee is... <b>${santa.santee.name}!</b></p>
+        text:`Happy winter celebration!\n\n Your santee is: ${santa.santee.name}!\nKeep it secret! Keep it safe!\n\nSanta`,
+        html:`<p>Happy winter celebration!</p>
+        <p>Your santee is... <b>${santa.santee.name}!</b></p>
         <p>Keep it secret! Keep it safe!<p>
         <p>Santa</p>`
     }));
@@ -61,7 +62,7 @@ async function send(mail, santas){
 
     let transdefaults = {
         from:'"Santa" '+ mail.email,
-        subject:`SECRET SANTA ${getYear(new Date())}`,
+        subject:`MICROCONDO SECRET SANTA ${getYear(new Date())}`,
     }
     let trans = nodemailer.createTransport(transoptions, transdefaults);
 
