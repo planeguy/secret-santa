@@ -86,7 +86,7 @@ async function main(){
     
     const questions = [
         {type: 'fuzzypath', name:'santafile', message:'Santas file?',
-            rootPath: './',// default: './',
+            rootPath: './',  itemType: 'file',// default: './',
             excludePath: nodePath => nodePath.startsWith('node_modules')||nodePath.startsWith('.git'),
             validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file')
         },
