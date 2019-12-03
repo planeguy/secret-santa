@@ -25,9 +25,9 @@ function shuffle(santas){
     }
     //assign
     for(let i=0;i<santas.length-1;i++){
-        santas[i].santee=santas[i+1];
+        santas[i].santee={...santas[i+1], santee:null}; //create a copy withoyt a santee to prevent circular object
     }
-    santas[santas.length-1].santee=santas[0];
+    santas[santas.length-1].santee={...santas[0], santee:null}; //create a copy withoyt a santee to prevent circular object
     return santas;
 }
 
@@ -35,41 +35,46 @@ async function send(mail, santas){
 
     let emails = santas.map(santa=>({
         to:`"${santa.name}" ${santa.email}`,
-        text:`Your santee is: ${santa.santee.name}!\nKeep it secret! Keep it safe!\n\nSanta`,
-        html:`<p>Your santee is... <b>${santa.santee.name}!</b></p>
+        text:`Happy winter celebration!\n\n Your santee is: ${santa.santee.name}!\nKeep it secret! Keep it safe!\n\nSanta`,
+        html:`<p>Happy winter celebration!</p>
+        <p>Your santee is... <b>${santa.santee.name}!</b></p>
         <p>Keep it secret! Keep it safe!<p>
         <p>Santa</p>`
     }));
     //console.log(emails);
 
+    //let testAccount = await nodemailer.createTestAccount();
+
     let transoptions = {
         name: mail.host,
         //pool: true,
-        host: mail.host, port: mail.port,
-        secure: false, tls: {
+        host: mail.host, 
+        port: mail.port,
+        secure: false, 
+        tls: {
             rejectUnauthorized:false
         },
-        // authMethod: 'LOGIN',
-        // auth: {
-        //     user: mail.user,
-        //     pass: mail.pass
-        // }
+        auth: {
+            user: mail.user,
+            pass: mail.pass
+        }
     };
 
     let transdefaults = {
         from:'"Santa" '+ mail.email,
-        subject:`SECRET SANTA ${getYear(new Date())}`,
+        subject:`MICROCONDO SECRET SANTA ${getYear(new Date())}`,
     }
     let trans = nodemailer.createTransport(transoptions, transdefaults);
 
     try{
         await trans.verify();
-            while (emails.length) {
-                trans.sendMail(emails.shift());
-                console.log(emails.length);
-            }
+        while (emails.length) {
+            console.log(emails.length);
+            trans.sendMail(emails.shift());
+        }
     }catch(eee){
-        console.log('Verify Error', eee, transoptions, mail);
+        console.error(eee);
+        console.log(transoptions, mail);
     }finally{
         //trans.close();
     }
@@ -81,9 +86,8 @@ async function main(){
     
     const questions = [
         {type: 'fuzzypath', name:'santafile', message:'Santas file?',
-            excludePath: nodePath => nodePath.startsWith('node_modules'),
-            validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file'),
-            default:'santas.json'
+            excludePath: nodePath => nodePath.startsWith('node_modules')||nodePath.startsWith('.'),
+            validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file')
         },
         {type: 'input', name:'host', message:'Mail host?', default:setting.host},
         {type: 'input', name:'port', message:'Mail port?', default:setting.port},
@@ -102,4 +106,4 @@ async function main(){
 }
 
 
-main();
+main().catch(console.error);

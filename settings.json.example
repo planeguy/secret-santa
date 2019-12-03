@@ -1,0 +1,6 @@
+{
+    "host":"mail.santaclaus.ca",
+    "port":9000,
+    "user":"santa",
+    "email":"santa@santaclaus.ca"
+}
