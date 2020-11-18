@@ -10,17 +10,19 @@ inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'));
 
 const defaultSettings = {port:587};
 
-function shuffle(santas){
+function shuffle(santas, iterations=8){
     let currentindex = santas.length;
     let swapindex, s;
     //shuffle
-    while(currentindex>0){
-        swapindex = Math.floor(Math.random()*currentindex);
-        currentindex-=1;
-        if(swapindex!=currentindex){
-            s=santas[currentindex];
-            santas[currentindex]=santas[swapindex];
-            santas[swapindex]=s;
+    for(let i=iterations;i>0;i--){
+        while(currentindex>0){
+            swapindex = Math.floor(Math.random()*currentindex);
+            currentindex-=1;
+            if(swapindex!=currentindex){
+                s=santas[currentindex];
+                santas[currentindex]=santas[swapindex];
+                santas[swapindex]=s;
+            }
         }
     }
     //assign
@@ -86,16 +88,18 @@ async function main(){
     
     const questions = [
         {type: 'fuzzypath', name:'santafile', message:'Santas file?',
-            rootPath: './',  itemType: 'file',// default: './',
-            excludePath: nodePath => nodePath.startsWith('node_modules')||nodePath.startsWith('.git'),
-            validate: async (f)=>await fs.access(f).then(f=>true).catch(e=>'No access to that file')
+            excludePath: nodePath => nodePath.includes('node_modules'),
+            excludeFilter: p=>p.startsWith('.'),
+            validate: async (f)=>await fs.access(f.value).then(f=>true).catch(e=>`No access to file ${JSON.stringify(f)} ${JSON.stringify(e)}`),
+            itemType:'file'
         },
         {type: 'input', name:'host', message:'Mail host?', default:setting.host},
         {type: 'input', name:'port', message:'Mail port?', default:setting.port},
         {type: 'input', name:'user', message:'Sending user?', default:setting.user},
         {type: 'input', name:'email', message:'Sending email, if different than user (leave blank if not)?', default:setting.email},
         {type: 'password', name:'pass', message:'Sending user password?', mask:'*'},
-        {type:'confirm', name:'spoil', message:'Show results?', default:false}
+        {type:'confirm', name:'spoil', message:'Show results?', default:false},
+        {type:'confirm', name:'debug',message:'Dry run? (do not email)', default:false}
     ];
 
     let answers = await inquirer.prompt(questions);
@@ -103,7 +107,7 @@ async function main(){
     let santas = await jsonfile.readFile(answers.santafile);
     santas = shuffle(santas);
     if (answers.spoil) console.log(santas);
-    await send(answers, santas);
+    if (!answers.debug) await send(answers, santas);
 }
 
 
