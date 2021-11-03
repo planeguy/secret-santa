@@ -82,6 +82,20 @@ async function send(mail, santas){
     }
 }
 
+async function getEmailSettings(setting){
+    const emailQs = [
+        {type: 'input', name:'host', message:'Mail host?', default:setting.host},
+        {type: 'input', name:'port', message:'Mail port?', default:setting.port},
+        {type: 'input', name:'user', message:'Sending user?', default:setting.user},
+        {type: 'input', name:'email', message:'Sending email, if different than user (leave blank if not)?', default:setting.email},
+        {type: 'password', name:'pass', message:'Sending user password?', mask:'*'},
+        {type: 'input', name:'extra', message:'Extra text (leave blank if none)?'}
+    ];
+    let emailAnswers = await inquirer.prompt(emailQs);
+    emailAnswers.email = emailAnswers.email||emailAnswers.user;
+    return emailAnswers;
+}
+
 async function main(){
 
     let setting = Object.assign({}, defaultSettings, await fs.access('settings.json').then(f=>jsonfile.readFile('settings.json')).catch(e=>({})));
@@ -93,21 +107,19 @@ async function main(){
             validate: async (f)=>await fs.access(f.value).then(f=>true).catch(e=>`No access to file ${JSON.stringify(f)} ${JSON.stringify(e)}`),
             itemType:'file'
         },
-        {type: 'input', name:'host', message:'Mail host?', default:setting.host},
-        {type: 'input', name:'port', message:'Mail port?', default:setting.port},
-        {type: 'input', name:'user', message:'Sending user?', default:setting.user},
-        {type: 'input', name:'email', message:'Sending email, if different than user (leave blank if not)?', default:setting.email},
-        {type: 'password', name:'pass', message:'Sending user password?', mask:'*'},
         {type:'confirm', name:'spoil', message:'Show results?', default:false},
         {type:'confirm', name:'debug',message:'Dry run? (do not email)', default:false}
     ];
 
     let answers = await inquirer.prompt(questions);
-    answers.email=answers.email||answers.user;
     let santas = await jsonfile.readFile(answers.santafile);
     santas = shuffle(santas);
     if (answers.spoil) console.log(santas);
-    if (!answers.debug) await send(answers, santas);
+    let s = await getSpoilSettings();
+    if (!answers.debug){
+        await send(await getEmailSettings(setting), santas);
+        console.log('Sent!')
+    }
 }
 
 
