@@ -9,6 +9,9 @@ const getYear = require('date-fns/getYear');
 inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'));
 
 const defaultSettings = {port:587};
+const SPOIL_no = 'Do not spoil';
+const SPOIL_save = 'Save to santa file';
+const SPOIL_console = 'Ouput to console';
 
 function shuffle(santas, iterations=8){
     let currentindex = santas.length;
@@ -34,13 +37,21 @@ function shuffle(santas, iterations=8){
 }
 
 async function send(mail, santas){
-
+    let extraplain='', extrahtml='';
+    if(!!mail.extra) {
+        extraplain=`${mail.extra}\n\n`;
+        extrahtml=`<p>$mail.extra<p>`;
+    }
     let emails = santas.map(santa=>({
         to:`"${santa.name}" ${santa.email}`,
-        text:`Happy winter celebration!\n\n Your santee is: ${santa.santee.name}!\nKeep it secret! Keep it safe!\n\nSanta`,
+        text:`Happy winter celebration!\n\n
+        Your santee is: ${santa.santee.name}!\n
+        Keep it secret! Keep it safe!\n\n
+        ${extraplain}
+        Santa`,
         html:`<p>Happy winter celebration!</p>
         <p>Your santee is... <b>${santa.santee.name}!</b></p>
-        <p>Keep it secret! Keep it safe!<p>
+        <p>Keep it secret! Keep it safe!<p>${extrahtml}
         <p>Santa</p>`
     }));
     //console.log(emails);
@@ -64,7 +75,7 @@ async function send(mail, santas){
 
     let transdefaults = {
         from:'"Santa" '+ mail.email,
-        subject:`MICROCONDO SECRET SANTA ${getYear(new Date())}`,
+        subject:`GARDENCONDO SECRET SANTA ${getYear(new Date())}`,
     }
     let trans = nodemailer.createTransport(transoptions, transdefaults);
 
@@ -96,6 +107,17 @@ async function getEmailSettings(setting){
     return emailAnswers;
 }
 
+async function getSpoilSettings(){
+    const spoilQs = [
+        {type: 'list', name:'spoil', message:'Spoil the results?', choices:[
+            SPOIL_no,
+            SPOIL_save,
+            SPOIL_console
+        ], default: SPOIL_no, loop:true}
+    ];
+    return await inquirer.prompt(spoilQs);
+}
+
 async function main(){
 
     let setting = Object.assign({}, defaultSettings, await fs.access('settings.json').then(f=>jsonfile.readFile('settings.json')).catch(e=>({})));
@@ -107,15 +129,23 @@ async function main(){
             validate: async (f)=>await fs.access(f.value).then(f=>true).catch(e=>`No access to file ${JSON.stringify(f)} ${JSON.stringify(e)}`),
             itemType:'file'
         },
-        {type:'confirm', name:'spoil', message:'Show results?', default:false},
         {type:'confirm', name:'debug',message:'Dry run? (do not email)', default:false}
     ];
 
     let answers = await inquirer.prompt(questions);
     let santas = await jsonfile.readFile(answers.santafile);
     santas = shuffle(santas);
-    if (answers.spoil) console.log(santas);
+
     let s = await getSpoilSettings();
+    switch(s.spoil){
+        case SPOIL_save:
+            jsonfile.writeFile(answers.santafile+'-results.json', santas);
+            break;
+        case SPOIL_console:
+            console.log(santas)
+            break;
+    }
+
     if (!answers.debug){
         await send(await getEmailSettings(setting), santas);
         console.log('Sent!')
