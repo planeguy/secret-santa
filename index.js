@@ -10,8 +10,8 @@ inquirer.registerPrompt('fuzzypath', require('inquirer-fuzzy-path'));
 
 const defaultSettings = {port:587};
 const SPOIL_no = 'Do not spoil';
-const SPOIL_save = 'Save to santa file';
-const SPOIL_console = 'Ouput to console';
+const SPOIL_save = 'Spoil to file';
+const SPOIL_console = 'Spoil to console';
 
 function shuffle(santas, iterations=8){
     let currentindex = santas.length;
@@ -125,11 +125,11 @@ async function main(){
     const questions = [
         {type: 'fuzzypath', name:'santafile', message:'Santas file?',
             excludePath: nodePath => nodePath.includes('node_modules'),
-            excludeFilter: p=>p.startsWith('.'),
+            excludeFilter: p=>p.startsWith('.')||!p.endsWith('.json'),
             validate: async (f)=>await fs.access(f.value).then(f=>true).catch(e=>`No access to file ${JSON.stringify(f)} ${JSON.stringify(e)}`),
             itemType:'file'
         },
-        {type:'confirm', name:'debug',message:'Dry run? (do not email)', default:false}
+        {type:'confirm', name:'debug',message:'Dry run?', default:false}
     ];
 
     let answers = await inquirer.prompt(questions);
