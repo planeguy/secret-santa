@@ -40,7 +40,7 @@ async function send(mail, santas){
     let extraplain='', extrahtml='';
     if(!!mail.extra) {
         extraplain=`${mail.extra}\n\n`;
-        extrahtml=`<p>$mail.extra<p>`;
+        extrahtml=`<p>${mail.extra}<p>`;
     }
     let emails = santas.map(santa=>({
         to:`"${santa.name}" ${santa.email}`,
