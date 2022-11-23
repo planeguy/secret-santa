@@ -13,6 +13,15 @@ const SPOIL_no = 'Do not spoil';
 const SPOIL_save = 'Spoil to file';
 const SPOIL_console = 'Spoil to console';
 
+function assign(santas){
+    //assign
+    for(let i=0;i<santas.length-1;i++){
+        santas[i].santee={...santas[i+1], santee:null}; //create a copy withoyt a santee to prevent circular object
+    }
+    santas[santas.length-1].santee={...santas[0], santee:null}; //create a copy withoyt a santee to prevent circular object
+    return santas;
+}
+
 function shuffle(santas, iterations=8){
     let currentindex = santas.length;
     let swapindex, s;
@@ -28,11 +37,6 @@ function shuffle(santas, iterations=8){
             }
         }
     }
-    //assign
-    for(let i=0;i<santas.length-1;i++){
-        santas[i].santee={...santas[i+1], santee:null}; //create a copy withoyt a santee to prevent circular object
-    }
-    santas[santas.length-1].santee={...santas[0], santee:null}; //create a copy withoyt a santee to prevent circular object
     return santas;
 }
 
@@ -134,7 +138,7 @@ async function main(){
 
     let answers = await inquirer.prompt(questions);
     let santas = await jsonfile.readFile(answers.santafile);
-    santas = shuffle(santas);
+    santas = shuffle(assign(shuffle(santas)));
 
     let s = await getSpoilSettings();
     switch(s.spoil){
