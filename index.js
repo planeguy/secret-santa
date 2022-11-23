@@ -143,10 +143,10 @@ async function main(){
     let s = await getSpoilSettings();
     switch(s.spoil){
         case SPOIL_save:
-            jsonfile.writeFile(answers.santafile+'-results.json', santas);
+            jsonfile.writeFile(`${answers.santafile}-results-${(new Date()).getFullYear()}.json`, santas);
             break;
         case SPOIL_console:
-            console.log(santas)
+            console.log(JSON.stringify(santas,null,4));
             break;
     }
 
