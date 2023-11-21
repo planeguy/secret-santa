@@ -45,7 +45,6 @@ function shuffle(santas, iterations=8){
         let cheatidx = santas.findIndex(f=>f.name.toLowerCase()==cheater.cheat.toLowerCase());
         santas.splice(cheatidx,0,cheater);
     }
-    console.log(santas.map(s=>s.name));
     return santas;
 }
 
@@ -150,12 +149,12 @@ async function main(){
 
     santas = assign(shuffle(santas));
 
-    // santas.sort((a,b)=>{
-    //     const aa = a.name.toLowerCase(), bb=b.name.toLowerCase();
-    //     if(aa>bb) return 1;
-    //     else if (aa<bb) return -1;
-    //     else return 0;
-    // });
+    santas.sort((a,b)=>{
+        const aa = a.name.toLowerCase(), bb=b.name.toLowerCase();
+        if(aa>bb) return 1;
+        else if (aa<bb) return -1;
+        else return 0;
+    });
 
     let s = await getSpoilSettings();
     switch(s.spoil){
