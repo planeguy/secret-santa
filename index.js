@@ -22,20 +22,24 @@ function assign(santas){
     return santas;
 }
 
-function shuffle(santas, iterations=8){
+function basicShuffle(santas){
     let currentindex = santas.length;
     let swapindex, s;
+    while(currentindex>0){
+        swapindex = Math.floor(Math.random()*currentindex);
+        currentindex-=1;
+        if(swapindex!=currentindex){
+            s=santas[currentindex];
+            santas[currentindex]=santas[swapindex];
+            santas[swapindex]=s;
+        }
+    }
+}
+
+function shuffle(santas, iterations=8){
     //shuffle
     for(let i=iterations;i>0;i--){
-        while(currentindex>0){
-            swapindex = Math.floor(Math.random()*currentindex);
-            currentindex-=1;
-            if(swapindex!=currentindex){
-                s=santas[currentindex];
-                santas[currentindex]=santas[swapindex];
-                santas[swapindex]=s;
-            }
-        }
+        basicShuffle(santas);
     }
     let cheaters = santas.filter(ch=>ch.cheat!=null);
 
