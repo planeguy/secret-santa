@@ -41,14 +41,6 @@ function shuffle(santas, iterations=8){
     for(let i=iterations;i>0;i--){
         basicShuffle(santas);
     }
-    let cheaters = santas.filter(ch=>ch.cheat!=null);
-
-    for(let c = 0; c<cheaters.length;c++){
-        let cheateridx = santas.indexOf(cheaters[c]);
-        let cheater = santas.splice(cheateridx,1)[0];
-        let cheatidx = santas.findIndex(f=>f.name.toLowerCase()==cheater.cheat.toLowerCase());
-        santas.splice(cheatidx,0,cheater);
-    }
     return santas;
 }
 
