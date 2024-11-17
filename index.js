@@ -36,6 +36,18 @@ function basicShuffle(santas){
     }
 }
 
+function cheat(santas){
+    let cheaters = santas.filter(ch=>ch.cheat!=null);
+
+    for(let c = 0; c<cheaters.length;c++){
+        let cheateridx = santas.indexOf(cheaters[c]);
+        let cheater = santas.splice(cheateridx,1)[0];
+        let cheatidx = santas.findIndex(f=>f.name.toLowerCase()==cheater.cheat.toLowerCase());
+        santas.splice(cheatidx,0,cheater);
+    }
+    return santas;
+}
+
 function shuffle(santas, iterations=8){
     //shuffle
     for(let i=iterations;i>0;i--){
@@ -143,7 +155,7 @@ async function main(){
     let answers = await inquirer.prompt(questions);
     let santas = await jsonfile.readFile(answers.santafile);
 
-    santas = assign(shuffle(santas));
+    santas = assign(cheat(shuffle(santas)));
 
     santas.sort((a,b)=>{
         const aa = a.name.toLowerCase(), bb=b.name.toLowerCase();
